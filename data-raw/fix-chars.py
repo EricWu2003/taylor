@@ -1,3 +1,4 @@
+import re 
 import os
 from os.path import join
 from os import path
@@ -17,6 +18,19 @@ def replaceChars(filepath):
 		lyrics = lyrics.replace("—", "-") # this is a long dash
 		lyrics = lyrics.replace("–", "-") # this is a different long dash
 		lyrics = lyrics.replace("…", "...")
+	
+	# Now we remove the background vocals, which appear between parentheses
+	# the [\s\S] character set matches any character, including newline.
+	# we also remove and spaces around the parentheses
+
+	# if the match occurs at the start/end of the line, then remove it entirely
+	lyrics = re.sub("\n[ ]*\([^()]*?\)[ ]*", "\n", lyrics)
+	lyrics = re.sub("[ ]*\([^()]*?\)[ ]*\n", "\n", lyrics)
+	lyrics = re.sub("[ ]*\([^()]*?\)[ ]*,", ",", lyrics)
+
+	# if the match does not occur at the start/end of the line, then replace it with a space.
+	lyrics = re.sub("[ ]*\([^()]*?\)[ ]*", " ", lyrics)
+
 
 	with open(filepath, 'w') as f:
 		f.write(lyrics)
@@ -33,7 +47,7 @@ album_titles = [name for name in os.listdir(".") if os.path.isdir(name)]
 for album in album_titles:
 	os.chdir(join(working_dir, raw_lyric_dir, album))
 	for path in os.listdir("."):
-		print(album, path)
+		# print(album, path)
 		if not os.path.isfile(path):
 			continue
 		replaceChars(path)
